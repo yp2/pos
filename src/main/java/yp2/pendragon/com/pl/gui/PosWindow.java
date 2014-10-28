@@ -1,6 +1,9 @@
 package yp2.pendragon.com.pl.gui;
 
 import yp2.pendragon.com.pl.article.Article;
+import yp2.pendragon.com.pl.devices.LcdDisplay;
+import yp2.pendragon.com.pl.devices.OutDevice;
+import yp2.pendragon.com.pl.devices.Printer;
 import yp2.pendragon.com.pl.engine.Engine;
 import yp2.pendragon.com.pl.scanner.BarCodeScanner;
 
@@ -14,7 +17,6 @@ import java.awt.event.ActionListener;
  */
 public class PosWindow extends JFrame {
 
-    private BarCodeScanner scanner;
     private JPanel labelPanel;
     private JPanel panePanel;
     private JPanel southPanel;
@@ -30,16 +32,19 @@ public class PosWindow extends JFrame {
     private JButton saleButton;
     private JButton exitButton;
     private JButton readButton;
-    private DefaultListModel<Article> lcdModel;
-    private DefaultListModel<Article> printerModel;
+    private DefaultListModel lcdModel;
+    private DefaultListModel printerModel;
     private Engine engine = Engine.getInstnace();
+    private BarCodeScanner scanner = BarCodeScanner.getInstance();
+    private OutDevice lcdDisplay = LcdDisplay.getInstance();
+    private OutDevice printer = Printer.getInstance();
 
+    public PosWindow (){
 
-    public PosWindow (BarCodeScanner scanner, DefaultListModel<Article> lcdModel,
-                      DefaultListModel<Article> printerModel){
-        this.scanner = scanner;
-        this.lcdModel = lcdModel;
-        this.printerModel = printerModel;
+        this.lcdModel = new DefaultListModel();
+        this.printerModel = new DefaultListModel();
+        lcdDisplay.setOutput(lcdModel);
+        printer.setOutput(printerModel);
 
         //gui elements
         labelPanel = new JPanel(new GridLayout(1,2));
@@ -93,7 +98,6 @@ public class PosWindow extends JFrame {
         // setting exitButton to inactive
         exitButton.setEnabled(false);
         scannerInput.setEditable(false);
-
     }
 
     class ReadBarcodeListener implements ActionListener {

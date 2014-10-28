@@ -1,6 +1,8 @@
 package yp2.pendragon.com.pl;
 
 import yp2.pendragon.com.pl.article.Article;
+import yp2.pendragon.com.pl.devices.LcdDisplay;
+import yp2.pendragon.com.pl.devices.Printer;
 import yp2.pendragon.com.pl.engine.Engine;
 import yp2.pendragon.com.pl.gui.PosWindow;
 import yp2.pendragon.com.pl.scanner.BarCodeScanner;
@@ -18,23 +20,23 @@ public class App
 {
     public static void main( String[] args )
     {
-        final DefaultListModel<Article> lcdModel = new DefaultListModel<Article>();
-        final DefaultListModel<Article> printerModel = new DefaultListModel<Article>();
+        // init of io devices
+        final LcdDisplay lcdDisplay = LcdDisplay.getInstance();
+        final Printer printer = Printer.getInstance();
         final BarCodeScanner scanner = BarCodeScanner.getInstance();
         //setting up engine
         final Engine engine = Engine.getInstnace();
-        engine.setLcdModel(lcdModel);
-        engine.setPrinterModel(printerModel);
+        engine.setLcdDisplay(lcdDisplay);
+        engine.setPrinter(printer);
 
+        //setting observer to scanner
         final LabelReadHandler labelReadHandler = new LabelReadHandler();
-
-
         scanner.addObserver(labelReadHandler);
 
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                JFrame posWindow = new PosWindow(scanner, lcdModel, printerModel);
+                JFrame posWindow = new PosWindow();
                 posWindow.setTitle("POS");
                 posWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 posWindow.pack();

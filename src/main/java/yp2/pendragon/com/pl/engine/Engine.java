@@ -3,6 +3,9 @@ package yp2.pendragon.com.pl.engine;
 import yp2.pendragon.com.pl.article.ArtLine;
 import yp2.pendragon.com.pl.article.Article;
 import yp2.pendragon.com.pl.dbase.DBase;
+import yp2.pendragon.com.pl.devices.LcdDisplay;
+import yp2.pendragon.com.pl.devices.OutDevice;
+import yp2.pendragon.com.pl.devices.Printer;
 import yp2.pendragon.com.pl.sale.Sale;
 
 import javax.swing.*;
@@ -13,8 +16,8 @@ import javax.swing.*;
 public class Engine {
     private static Engine ourInstance = new Engine();
     private DBase dBase = DBase.getInstance();
-    private DefaultListModel<Article> lcdModel;
-    private DefaultListModel<Article> printerModel;
+    private LcdDisplay lcdDisplay;
+    private Printer printer;
     private boolean newSale = false;
     private Sale sale = null;
 
@@ -26,12 +29,12 @@ public class Engine {
         return ourInstance;
     }
 
-    public void setLcdModel(DefaultListModel<Article> lcdModel){
-        this.lcdModel = lcdModel;
+    public void setLcdDisplay (OutDevice outDevice){
+        this.lcdDisplay = (LcdDisplay) outDevice;
     }
 
-    public void setPrinterModel(DefaultListModel<Article> printerModel){
-        this.printerModel = printerModel;
+    public void setPrinter(Printer printer){
+        this.printer = printer;
     }
 
     public void newSale(){
@@ -40,8 +43,8 @@ public class Engine {
             this.sale = new Sale();
             this.newSale = true;
             // clear lcd
-            this.lcdModel.clear();
-            this.printerModel.clear();
+            this.lcdDisplay.clear();
+            this.printer.clear();
         }
     }
 
@@ -49,16 +52,13 @@ public class Engine {
         //end sale
         if (newSale == true){
             this.newSale = false;
-            this.lcdModel.addElement(new ArtLine("Total sum: " + this.sale.getTotalSum()));
+            if (this.sale.getArticles().size() != 0) {
+                //lcd total sum
+                this.lcdDisplay.println("Total sum: " + this.sale.getTotalSum());
 
-            //recipt print
-            String reciptHeder = "Sale " + this.sale.getSaleDate();
-            printerModel.addElement(new ArtLine(reciptHeder));
-
-            for (Article art: sale.getArticles()){
-                this.printerModel.addElement(art);
+                //recipt print
+                this.printer.printSale(this.sale);
             }
-            this.printerModel.addElement(new ArtLine("Total sum: " + this.sale.getTotalSum()));
         }
     }
 
@@ -67,17 +67,19 @@ public class Engine {
         if (newSale){
             if (label.equals("")){
                 // readed barcode empty
-                System.out.println("Invalid bar-code");
-                lcdModel.addElement(new ArtLine("Invalid bar-code"));
+                String msg = "Invalid bar-code";
+                System.out.println(msg);
+                lcdDisplay.println(msg);
             } else {
                 scannedArticle = dBase.getAricle(label);
                 if (scannedArticle == null){
-                    System.out.println("Product not found");
-                    lcdModel.addElement(new ArtLine("Product not found"));
+                    String msg = "Product not found";
+                    System.out.println(msg);
+                    lcdDisplay.println(msg);
                 } else {
                     // add article to lcd and to sale
                     System.out.println(scannedArticle.toString());
-                    lcdModel.addElement(scannedArticle);
+                    lcdDisplay.println(scannedArticle);
                     this.sale.addArticle(scannedArticle);
                 }
             }
